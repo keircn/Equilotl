@@ -16,8 +16,8 @@ import (
 	"image/color"
 	"vencord/buildinfo"
 
+	imgui "github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
-	"github.com/AllenDang/imgui-go"
 
 	// png decoder for icon
 	_ "image/png"
@@ -64,6 +64,15 @@ func main() {
 
 	customChoiceIdx = len(discords)
 
+	var linuxFlags g.MasterWindowFlags = 0
+	if runtime.GOOS == "linux" {
+		os.Setenv("GDK_SCALE", "1")
+		os.Setenv("GDK_DPI_SCALE", "1")
+	}
+
+	win = g.NewMasterWindow("Equilotl", 1200, 800, linuxFlags)
+	win.SetSizeLimits(1200, 800, -1, -1)
+
 	go func() {
 		<-GithubDoneChan
 		g.Update()
@@ -74,20 +83,12 @@ func main() {
 		g.Update()
 	}()
 
-	var linuxFlags g.MasterWindowFlags = 0
-	if runtime.GOOS == "linux" {
-		os.Setenv("GDK_SCALE", "1")
-		os.Setenv("GDK_DPI_SCALE", "1")
-	}
-
-	win = g.NewMasterWindow("Equilotl", 1200, 800, linuxFlags)
-
 	icon, _, err := image.Decode(bytes.NewReader(iconBytes))
 	if err != nil {
 		Log.Warn("Failed to load application icon", err)
 		Log.Debug(iconBytes, len(iconBytes))
 	} else {
-		win.SetIcon([]image.Image{icon})
+		win.SetIcon(icon)
 	}
 	win.Run(loop)
 }
@@ -300,15 +301,19 @@ func RawInfoModal(id, title, description string, isOpenAsar bool) g.Widget {
 		SetStyle(g.StyleVarWindowPadding, 30, 30).
 		SetStyleFloat(g.StyleVarWindowRounding, 12).
 		To(
+			g.Custom(func() {
+				wi, _ := win.GetSize()
+				g.SetNextWindowSize(float32(wi)*0.8, 0)
+			}),
 			g.PopupModal(id).
-				Flags(g.WindowFlagsNoTitleBar | Ternary(isDynamic, g.WindowFlagsAlwaysAutoResize, 0)).
+				Flags(g.WindowFlagsNoTitleBar | g.WindowFlagsNoResize | g.WindowFlagsNoMove | Ternary(isDynamic, g.WindowFlagsAlwaysAutoResize, 0)).
 				Layout(
 					g.Align(g.AlignCenter).To(
 						g.Style().SetFontSize(30).To(
 							g.Label(title),
 						),
 						g.Style().SetFontSize(20).To(
-							g.Label(description).Wrapped(isDynamic),
+							g.Label(description).Wrapped(true),
 						),
 						&CondWidget{id == "#scuffed-install", func() g.Widget {
 							return g.Column(
@@ -356,8 +361,12 @@ func UpdateModal() g.Widget {
 		SetStyle(g.StyleVarWindowPadding, 30, 30).
 		SetStyleFloat(g.StyleVarWindowRounding, 12).
 		To(
+			g.Custom(func() {
+				wi, _ := win.GetSize()
+				g.SetNextWindowSize(float32(wi)*0.8, 0)
+			}),
 			g.PopupModal("#update-prompt").
-				Flags(g.WindowFlagsNoTitleBar | g.WindowFlagsAlwaysAutoResize).
+				Flags(g.WindowFlagsNoTitleBar | g.WindowFlagsNoResize | g.WindowFlagsNoMove | g.WindowFlagsAlwaysAutoResize).
 				Layout(
 					g.Align(g.AlignCenter).To(
 						g.Style().SetFontSize(30).To(
@@ -370,7 +379,7 @@ func UpdateModal() g.Widget {
 									"The installer will temporarily seem unresponsive. Just wait!\n"+
 									"Once the update is done, the Installer will automatically reopen.\n\n"+
 									"On MacOs, Auto updates are not supported, so it will instead open in browser.",
-							),
+							).Wrapped(true),
 						),
 						g.Row(
 							g.Button("Update Now").
@@ -482,7 +491,7 @@ func renderInstaller() g.Widget {
 					OnChange(onCustomInputChanged).
 					// this library has its own autocomplete but it's broken
 					Callback(
-						func(data imgui.InputTextCallbackData) int32 {
+						func(data imgui.InputTextCallbackData) int {
 							if len(candidates) == 0 {
 								return 0
 							}
@@ -498,15 +507,15 @@ func renderInstaller() g.Widget {
 							// Delete previous auto complete
 							if lastAutoComplete != "" {
 								start -= len(lastAutoComplete)
-								data.DeleteBytes(start, len(lastAutoComplete))
+								data.DeleteChars(int32(start), int32(len(lastAutoComplete)))
 							} else if autoCompleteFile != "" { // delete partial input
 								start -= len(autoCompleteFile)
-								data.DeleteBytes(start, len(autoCompleteFile))
+								data.DeleteChars(int32(start), int32(len(autoCompleteFile)))
 							}
 
 							// Insert auto complete
 							lastAutoComplete = candidates[autoCompleteIdx].(string)
-							data.InsertBytes(start, []byte(lastAutoComplete))
+							data.InsertChars(int32(start), lastAutoComplete)
 							autoCompleteIdx++
 
 							return 0
@@ -602,10 +611,11 @@ func renderErrorCard(col color.Color, message string, height float32) g.Widget {
 		To(
 			g.Child().
 				Size(g.Auto, height).
+				Flags(g.WindowFlagsNoScrollbar).
 				Layout(
 					g.Row(
 						g.Style().SetColor(g.StyleColorText, color.Black).To(
-							g.Markdown(&message),
+							g.Markdown(message),
 						),
 					),
 				),
