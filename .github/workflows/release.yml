@@ -37,16 +37,33 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt update
-          sudo apt install -y pkg-config libsdl2-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+          sudo apt install -y pkg-config libsdl2-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev libglfw3-dev libwayland-dev libwayland-egl1 libegl-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
 
       - name: Install Go dependencies
         run: go get -v
 
-      - name: Build GUI
-        run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "static gui"
+      - name: Recreate vendor and apply Wayland patches
+        run: |
+          go mod vendor
+          git apply patches/wayland.patch
+
+      - name: Build GUI (X11)
+        run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags static -ldflags "-s
+          -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short
+          HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o
+          Equilotl-x11
+
+      - name: Build GUI (Wayland)
+        run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "static wayland"
           -ldflags "-s -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse
           --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name
-          }}'" -o Equilotl-x11
+          }}'" -o Equilotl-wayland
+
+      - name: Build GUI (Combined X11+Wayland)
+        run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "static combined"
+          -ldflags "-s -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse
+          --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name
+          }}'" -o Equilotl
 
       - name: Build CLI
         run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "cli" -ldflags "-s
@@ -64,6 +81,8 @@ jobs:
           name: Equilotl-linux
           path: |
             Equilotl-x11
+            Equilotl-wayland
+            Equilotl
             EquilotlCli-linux
 
   build-mac:
@@ -263,6 +282,8 @@ jobs:
             This is release ${{ github.ref_name }} of Equilotl.
           files: |
             linux/Equilotl-x11
+            linux/Equilotl-wayland
+            linux/Equilotl
             linux/EquilotlCli-linux
             macos/Equilotl.MacOS.zip
             windows/Equilotl*.exe
