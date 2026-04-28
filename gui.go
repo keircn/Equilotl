@@ -11,10 +11,10 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"equilotl/buildinfo"
 	"errors"
 	"image"
 	"image/color"
-	"vencord/buildinfo"
 
 	imgui "github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"

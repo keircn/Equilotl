@@ -49,26 +49,26 @@ jobs:
 
       - name: Build GUI (X11)
         run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags static -ldflags "-s
-          -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short
-          HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o
+          -w -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short
+          HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o
           Equilotl-x11
 
       - name: Build GUI (Wayland)
         run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "static wayland"
-          -ldflags "-s -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse
-          --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name
-          }}'" -o Equilotl-wayland
+          -ldflags "-s -w -X 'equilotl/buildinfo.InstallerGitHash=$(git
+          rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{
+          github.ref_name }}'" -o Equilotl-wayland
 
       - name: Build GUI (Combined)
         run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "static combined"
-          -ldflags "-s -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse
-          --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name
-          }}'" -o Equilotl
+          -ldflags "-s -w -X 'equilotl/buildinfo.InstallerGitHash=$(git
+          rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{
+          github.ref_name }}'" -o Equilotl
 
       - name: Build CLI
         run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags "cli" -ldflags "-s
-          -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short
-          HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o
+          -w -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short
+          HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o
           EquilotlCli-linux
 
       - name: Update executable
@@ -121,8 +121,8 @@ jobs:
         run: CGO_CFLAGS="-mmacosx-version-min=10.15"
           CGO_LDFLAGS="-mmacosx-version-min=10.15" CGO_ENABLED=1 GOOS=darwin
           GOARCH=amd64 go build -v -tags "static gui" -ldflags "-s -w -X
-          'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X
-          'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Equilotl
+          'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X
+          'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Equilotl
 
       - name: Update executable
         run: |
@@ -221,14 +221,14 @@ jobs:
           export GOROOT=/mingw64/lib/go
           export GOPATH=/mingw64
           go-winres make --product-version "git-tag"
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "static gui" -ldflags "-s -w -H=windowsgui -extldflags=-static -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Equilotl.exe
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "static gui" -ldflags "-s -w -H=windowsgui -extldflags=-static -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Equilotl.exe
 
       - name: Build CLI
         shell: msys2 {0}
         run: |
           export GOROOT=/mingw64/lib/go
           export GOPATH=/mingw64
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "cli" -ldflags "-s -w -X 'vencord/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencord/buildinfo.InstallerTag=${{ github.ref_name }}'" -o EquilotlCli.exe
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "cli" -ldflags "-s -w -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o EquilotlCli.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

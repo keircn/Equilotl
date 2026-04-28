@@ -10,6 +10,7 @@ package main
 
 import (
 	"bytes"
+	"equilotl/buildinfo"
 	"errors"
 	"flag"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"vencord/buildinfo"
 
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"

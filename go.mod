@@ -1,4 +1,4 @@
-module vencord
+module equilotl
 
 go 1.26.2
 
