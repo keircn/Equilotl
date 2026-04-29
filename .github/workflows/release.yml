@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.2"
-
-      - name: Checkout code
-        uses: actions/checkout@v6
 
       - uses: actions/cache@v5
         with:
@@ -89,13 +89,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.2"
-
-      - name: Checkout code
-        uses: actions/checkout@v6
 
       - uses: actions/cache@v5
         with:
@@ -175,13 +175,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.2"
-
-      - name: Checkout code
-        uses: actions/checkout@v6
 
       - uses: actions/cache@v5
         with:
@@ -194,35 +194,29 @@ jobs:
 
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
 
       - name: Install Windows dependencies
         shell: msys2 {0}
         run: |
-          pacman -S --noconfirm git mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-go
-          export GOROOT=/mingw64/lib/go
-          export GOPATH=/mingw64
+          pacman -S --noconfirm git mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
 
       - name: Install Go dependencies
         shell: msys2 {0}
         run: |
-          export GOROOT=/mingw64/lib/go
-          export GOPATH=/mingw64
           go get -v
           go install github.com/tc-hib/go-winres@latest
 
       - name: Build GUI
         shell: msys2 {0}
         run: |
-          export GOROOT=/mingw64/lib/go
-          export GOPATH=/mingw64
           go-winres make --product-version "git-tag"
           CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "static gui" -ldflags "-s -w -H=windowsgui -extldflags=-static -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Equilotl.exe
 
       - name: Build CLI
         shell: msys2 {0}
         run: |
-          export GOROOT=/mingw64/lib/go
-          export GOPATH=/mingw64
           CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags "cli" -ldflags "-s -w -X 'equilotl/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'equilotl/buildinfo.InstallerTag=${{ github.ref_name }}'" -o EquilotlCli.exe
 
       - name: Upload artifact
