@@ -437,6 +437,11 @@ func renderInstaller() g.Widget {
 		warningHeight = 130
 	}
 
+	var baseFontSize float32 = 30
+	if runtime.GOOS == "darwin" {
+		baseFontSize = 20
+	}
+
 	layout := g.Layout{
 		g.Dummy(0, 20),
 		g.Separator(),
@@ -451,7 +456,7 @@ func renderInstaller() g.Widget {
 
 		g.Dummy(0, 5),
 
-		g.Style().SetFontSize(30).To(
+		g.Style().SetFontSize(baseFontSize).To(
 			g.Label("Please select an install to patch"),
 		),
 
@@ -617,8 +622,10 @@ func renderErrorCard(col color.Color, message string, height float32) g.Widget {
 
 func loop() {
 	var baseFontSize float32 = 20
+	var baseHeaderSize float32 = 40
 	if runtime.GOOS == "darwin" {
 		baseFontSize = 10
+		baseHeaderSize = 30
 	}
 
 	g.PushWindowPadding(48, 48)
@@ -639,7 +646,7 @@ func loop() {
 		Layout(
 			g.Style().SetFontSize(baseFontSize).To(
 				g.Align(g.AlignCenter).To(
-					g.Style().SetFontSize(40).To(
+					g.Style().SetFontSize(baseHeaderSize).To(
 						g.Label("Equilotl"),
 					),
 				),
