@@ -420,6 +420,10 @@ func renderInstaller() g.Widget {
 	candidates := makeAutoComplete()
 	wi, _ := win.GetSize()
 	w := float32(wi) - 96
+	if w < 200 {
+		w = 200
+	}
+	btnWidth := (w - 40) / 4
 
 	var currentDiscord *DiscordInstall
 	if radioIdx != customChoiceIdx {
@@ -536,7 +540,7 @@ func renderInstaller() g.Widget {
 				To(
 					g.Button("Install").
 						OnClick(handlePatch).
-						Size((w-40)/4, 50),
+						Size(btnWidth, 50),
 					Tooltip("Patch the selected Discord Install"),
 				),
 			g.Style().
@@ -554,7 +558,7 @@ func renderInstaller() g.Widget {
 								}
 							}
 						}).
-						Size((w-40)/4, 50),
+						Size(btnWidth, 50),
 					Tooltip("Reinstall & Update Equicord"),
 				),
 			g.Style().
@@ -562,7 +566,7 @@ func renderInstaller() g.Widget {
 				To(
 					g.Button("Uninstall").
 						OnClick(handleUnpatch).
-						Size((w-40)/4, 50),
+						Size(btnWidth, 50),
 					Tooltip("Unpatch the selected Discord Install"),
 				),
 			g.Style().
@@ -570,7 +574,7 @@ func renderInstaller() g.Widget {
 				To(
 					g.Button(Ternary(isOpenAsar, "Uninstall OpenAsar", Ternary(currentDiscord != nil, "Install OpenAsar", "(Un-)Install OpenAsar"))).
 						OnClick(handleOpenAsar).
-						Size((w-40)/4, 50),
+						Size(btnWidth, 50),
 					Tooltip("Manage OpenAsar"),
 				),
 		),
