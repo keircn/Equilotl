@@ -71,6 +71,7 @@ func main() {
 	}
 
 	win = g.NewMasterWindow("Equilotl", 1200, 800, linuxFlags)
+	win.SetSizeLimits(1200, 800, -1, -1)
 
 	go func() {
 		<-GithubDoneChan
@@ -431,6 +432,11 @@ func renderInstaller() g.Widget {
 		g.OpenPopup("#update-prompt")
 	}
 
+	var warningHeight float32 = 90
+	if runtime.GOOS == "darwin" {
+		warningHeight = 130
+	}
+
 	layout := g.Layout{
 		g.Dummy(0, 20),
 		g.Separator(),
@@ -440,7 +446,7 @@ func renderInstaller() g.Widget {
 			DiscordYellow,
 			"**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n"+
 				"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.",
-			90,
+			warningHeight,
 		),
 
 		g.Dummy(0, 5),
