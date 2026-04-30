@@ -71,7 +71,6 @@ func main() {
 	}
 
 	win = g.NewMasterWindow("Equilotl", 1200, 800, linuxFlags)
-	win.SetSizeLimits(1200, 800, -1, -1)
 
 	go func() {
 		<-GithubDoneChan
@@ -312,9 +311,7 @@ func RawInfoModal(id, title, description string, isOpenAsar bool) g.Widget {
 						g.Style().SetFontSize(30).To(
 							g.Label(title),
 						),
-						g.Style().SetFontSize(20).To(
-							g.Label(description).Wrapped(true),
-						),
+						g.Label(description).Wrapped(true),
 						&CondWidget{id == "#scuffed-install", func() g.Widget {
 							return g.Column(
 								g.Dummy(0, 10),
@@ -372,15 +369,13 @@ func UpdateModal() g.Widget {
 						g.Style().SetFontSize(30).To(
 							g.Label("Your Installer is outdated!"),
 						),
-						g.Style().SetFontSize(20).To(
-							g.Label(
-								"Would you like to update now?\n\n"+
-									"Once you press Update Now, the new installer will automatically be downloaded.\n"+
-									"The installer will temporarily seem unresponsive. Just wait!\n"+
-									"Once the update is done, the Installer will automatically reopen.\n\n"+
-									"On MacOs, Auto updates are not supported, so it will instead open in browser.",
-							).Wrapped(true),
-						),
+						g.Label(
+							"Would you like to update now?\n\n"+
+								"Once you press Update Now, the new installer will automatically be downloaded.\n"+
+								"The installer will temporarily seem unresponsive. Just wait!\n"+
+								"Once the update is done, the Installer will automatically reopen.\n\n"+
+								"On MacOs, Auto updates are not supported, so it will instead open in browser.",
+						).Wrapped(true),
 						g.Row(
 							g.Button("Update Now").
 								OnClick(func() {
@@ -441,13 +436,11 @@ func renderInstaller() g.Widget {
 		g.Separator(),
 		g.Dummy(0, 5),
 
-		g.Style().SetFontSize(20).To(
-			renderErrorCard(
-				DiscordYellow,
-				"**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n"+
-					"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.",
-				90,
-			),
+		renderErrorCard(
+			DiscordYellow,
+			"**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n"+
+				"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.",
+			90,
 		),
 
 		g.Dummy(0, 5),
@@ -464,26 +457,23 @@ func renderInstaller() g.Widget {
 			return g.Label(s)
 		}, nil},
 
-		g.Style().SetFontSize(20).To(
-			g.RangeBuilder("Discords", discords, func(i int, v any) g.Widget {
-				d := v.(*DiscordInstall)
-				//goland:noinspection GoDeprecation
-				text := strings.Title(d.branch) + " - " + d.path
-				if d.isPatched {
-					text += " [PATCHED]"
-				}
-				return g.RadioButton(text, radioIdx == i).
-					OnChange(makeRadioOnChange(i))
-			}),
+		g.RangeBuilder("Discords", discords, func(i int, v any) g.Widget {
+			d := v.(*DiscordInstall)
+			//goland:noinspection GoDeprecation
+			text := strings.Title(d.branch) + " - " + d.path
+			if d.isPatched {
+				text += " [PATCHED]"
+			}
+			return g.RadioButton(text, radioIdx == i).
+				OnChange(makeRadioOnChange(i))
+		}),
 
-			g.RadioButton("Custom Install Location", radioIdx == customChoiceIdx).
-				OnChange(makeRadioOnChange(customChoiceIdx)),
-		),
+		g.RadioButton("Custom Install Location", radioIdx == customChoiceIdx).
+			OnChange(makeRadioOnChange(customChoiceIdx)),
 
 		g.Dummy(0, 5),
 		g.Style().
 			SetStyle(g.StyleVarFramePadding, 16, 16).
-			SetFontSize(20).
 			To(
 				g.InputText(&customDir).Hint("The custom location").
 					Size(w - 16).
@@ -528,53 +518,50 @@ func renderInstaller() g.Widget {
 		}),
 
 		g.Dummy(0, 20),
-
-		g.Style().SetFontSize(20).To(
-			g.Row(
-				g.Style().
-					SetColor(g.StyleColorButton, DiscordGreen).
-					SetDisabled(GithubError != nil).
-					To(
-						g.Button("Install").
-							OnClick(handlePatch).
-							Size((w-40)/4, 50),
-						Tooltip("Patch the selected Discord Install"),
-					),
-				g.Style().
-					SetColor(g.StyleColorButton, DiscordBlue).
-					SetDisabled(GithubError != nil).
-					To(
-						g.Button("Reinstall / Repair").
-							OnClick(func() {
-								if IsDevInstall {
+		g.Row(
+			g.Style().
+				SetColor(g.StyleColorButton, DiscordGreen).
+				SetDisabled(GithubError != nil).
+				To(
+					g.Button("Install").
+						OnClick(handlePatch).
+						Size((w-40)/4, 50),
+					Tooltip("Patch the selected Discord Install"),
+				),
+			g.Style().
+				SetColor(g.StyleColorButton, DiscordBlue).
+				SetDisabled(GithubError != nil).
+				To(
+					g.Button("Reinstall / Repair").
+						OnClick(func() {
+							if IsDevInstall {
+								handlePatch()
+							} else {
+								err := InstallLatestBuilds()
+								if err == nil {
 									handlePatch()
-								} else {
-									err := InstallLatestBuilds()
-									if err == nil {
-										handlePatch()
-									}
 								}
-							}).
-							Size((w-40)/4, 50),
-						Tooltip("Reinstall & Update Equicord"),
-					),
-				g.Style().
-					SetColor(g.StyleColorButton, DiscordRed).
-					To(
-						g.Button("Uninstall").
-							OnClick(handleUnpatch).
-							Size((w-40)/4, 50),
-						Tooltip("Unpatch the selected Discord Install"),
-					),
-				g.Style().
-					SetColor(g.StyleColorButton, Ternary(isOpenAsar, DiscordRed, DiscordGreen)).
-					To(
-						g.Button(Ternary(isOpenAsar, "Uninstall OpenAsar", Ternary(currentDiscord != nil, "Install OpenAsar", "(Un-)Install OpenAsar"))).
-							OnClick(handleOpenAsar).
-							Size((w-40)/4, 50),
-						Tooltip("Manage OpenAsar"),
-					),
-			),
+							}
+						}).
+						Size((w-40)/4, 50),
+					Tooltip("Reinstall & Update Equicord"),
+				),
+			g.Style().
+				SetColor(g.StyleColorButton, DiscordRed).
+				To(
+					g.Button("Uninstall").
+						OnClick(handleUnpatch).
+						Size((w-40)/4, 50),
+					Tooltip("Unpatch the selected Discord Install"),
+				),
+			g.Style().
+				SetColor(g.StyleColorButton, Ternary(isOpenAsar, DiscordRed, DiscordGreen)).
+				To(
+					g.Button(Ternary(isOpenAsar, "Uninstall OpenAsar", Ternary(currentDiscord != nil, "Install OpenAsar", "(Un-)Install OpenAsar"))).
+						OnClick(handleOpenAsar).
+						Size((w-40)/4, 50),
+					Tooltip("Manage OpenAsar"),
+				),
 		),
 
 		InfoModal("#patched", "Successfully Patched", "If Discord is still open, fully close it first.\n"+
@@ -623,6 +610,11 @@ func renderErrorCard(col color.Color, message string, height float32) g.Widget {
 }
 
 func loop() {
+	var baseFontSize float32 = 20
+	if runtime.GOOS == "darwin" {
+		baseFontSize = 10
+	}
+
 	g.PushWindowPadding(48, 48)
 
 	g.SingleWindow().
@@ -639,14 +631,15 @@ func loop() {
 			}},
 		).
 		Layout(
-			g.Align(g.AlignCenter).To(
-				g.Style().SetFontSize(40).To(
-					g.Label("Equilotl"),
+			g.Style().SetFontSize(baseFontSize).To(
+				g.Align(g.AlignCenter).To(
+					g.Style().SetFontSize(40).To(
+						g.Label("Equilotl"),
+					),
 				),
-			),
 
-			g.Dummy(0, 20),
-			g.Style().SetFontSize(20).To(
+				g.Dummy(0, 20),
+
 				g.Row(
 					g.Label(Ternary(IsDevInstall, "Dev Install: ", "Equicord will be downloaded to: ")+EquicordDirectory),
 					g.Style().
@@ -658,12 +651,15 @@ func loop() {
 							}),
 						),
 				),
+
 				&CondWidget{!IsDevInstall, func() g.Widget {
 					return g.Label("To customise this location, set the environment variable 'EQUICORD_USER_DATA_DIR' and restart me").Wrapped(true)
 				}, nil},
+
 				g.Dummy(0, 10),
 				g.Label("Equilotl Version: "+buildinfo.InstallerTag+" ("+buildinfo.InstallerGitHash+")"+Ternary(IsSelfOutdated, " - OUTDATED", "")),
 				g.Label("Local Equicord Version: "+InstalledHash),
+
 				&CondWidget{
 					GithubError == nil,
 					func() g.Widget {
@@ -675,9 +671,9 @@ func loop() {
 						return renderErrorCard(DiscordRed, "Failed to fetch Info from GitHub: "+GithubError.Error(), 40)
 					},
 				},
-			),
 
-			renderInstaller(),
+				renderInstaller(),
+			),
 		)
 
 	g.PopStyle()
