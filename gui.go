@@ -48,6 +48,9 @@ var (
 	acceptedOpenAsar   bool
 	showedUpdatePrompt bool
 
+	cachedCandidates []any
+	lastCustomDir    string
+
 	win *g.MasterWindow
 )
 
@@ -422,17 +425,16 @@ func ShowModal(title, desc string) {
 }
 
 func renderInstaller() g.Widget {
-	candidates := makeAutoComplete()
-	wi, _ := win.GetSize()
-	if wi < 96 {
-		wi = 96
+	if customDir != lastCustomDir {
+		cachedCandidates = makeAutoComplete()
+		lastCustomDir = customDir
 	}
-
+	candidates := cachedCandidates
+	wi, _ := win.GetSize()
 	w := float32(wi) - 96
 	if w < 200 {
 		w = 200
 	}
-
 	btnWidth := (w - 40) / 4
 	if btnWidth < 1 {
 		btnWidth = 1
@@ -635,6 +637,10 @@ func renderErrorCard(col color.Color, message string, height float32) g.Widget {
 }
 
 func loop() {
+	if wi, hi := win.GetSize(); wi < 96 || hi < 96 {
+		return
+	}
+
 	var baseFontSize float32 = 20
 	var baseHeaderSize float32 = 40
 	if runtime.GOOS == "darwin" {
