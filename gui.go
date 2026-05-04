@@ -52,6 +52,10 @@ var (
 	lastCustomDir    string
 
 	win *g.MasterWindow
+
+	cachedWarningMarkdown   *g.MarkdownWidget
+	cachedGithubErrMarkdown *g.MarkdownWidget
+	lastGithubErrText       string
 )
 
 //go:embed winres/icon.png
@@ -465,8 +469,13 @@ func renderInstaller() g.Widget {
 
 		renderErrorCard(
 			DiscordYellow,
-			"**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n"+
-				"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.",
+			func() *g.MarkdownWidget {
+				if cachedWarningMarkdown == nil {
+					cachedWarningMarkdown = g.Markdown("**Github** and **equicord.org** are the only official places to get Equicord. Any other site claiming to be us is malicious.\n" +
+						"If you downloaded from any other source, you should delete / uninstall everything immediately, run a malware scan and change your Discord password.")
+				}
+				return cachedWarningMarkdown
+			}(),
 			warningHeight,
 		),
 
@@ -616,7 +625,7 @@ func renderInstaller() g.Widget {
 	return layout
 }
 
-func renderErrorCard(col color.Color, message string, height float32) g.Widget {
+func renderErrorCard(col color.Color, md *g.MarkdownWidget, height float32) g.Widget {
 	return g.Style().
 		SetColor(g.StyleColorChildBg, col).
 		SetStyleFloat(g.StyleVarAlpha, 0.9).
@@ -629,7 +638,7 @@ func renderErrorCard(col color.Color, message string, height float32) g.Widget {
 				Layout(
 					g.Row(
 						g.Style().SetColor(g.StyleColorText, color.Black).To(
-							g.Markdown(message),
+							md,
 						),
 					),
 				),
@@ -701,7 +710,14 @@ func loop() {
 						}
 						return g.Label("Latest Equicord Version: " + LatestHash)
 					}, func() g.Widget {
-						return renderErrorCard(DiscordRed, "Failed to fetch Info from GitHub: "+GithubError.Error(), 40)
+						return renderErrorCard(DiscordRed, func() *g.MarkdownWidget {
+							errText := "Failed to fetch Info from GitHub: " + GithubError.Error()
+							if cachedGithubErrMarkdown == nil || lastGithubErrText != errText {
+								cachedGithubErrMarkdown = g.Markdown(errText)
+								lastGithubErrText = errText
+							}
+							return cachedGithubErrMarkdown
+						}(), 40)
 					},
 				},
 
