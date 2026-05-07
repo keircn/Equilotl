@@ -170,7 +170,7 @@ jobs:
         run: |
           echo "$API_KEY" > apple.p8
           ditto -c -k --keepParent Equilotl.app Equilotl-notarize.zip
-          xcrun notarytool submit Equilotl-notarize.zip --key apple.p8 --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER" --primary-bundle-id org.equicord.equilotl --wait
+          xcrun notarytool submit Equilotl-notarize.zip --key apple.p8 --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER" --wait
           xcrun stapler staple Equilotl.app
           rm apple.p8 Equilotl-notarize.zip
 
